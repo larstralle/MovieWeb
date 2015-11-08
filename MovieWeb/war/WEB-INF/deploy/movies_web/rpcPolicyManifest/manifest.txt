@@ -1,2 +1,3 @@
 # Module movies_web
 # RPC service class, partial path of RPC policy file
+de.unihd.movies.client.service.MovieManagerService, A52C3DCFDDC10BA71B1D85861C8829B8.gwt.rpc

@@ -10,6 +10,8 @@ public class Movie implements Serializable
 	
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+	
+	private static int nextNumber = 0;
 
 	/** The id. */
 	private int id;
@@ -33,7 +35,7 @@ public class Movie implements Serializable
 	 * Instantiates an empty movie.
 	 * */
 	public Movie() {
-		this.id = 0;
+		this.id = nextNumber++;
 		this.name = "";
 		this.time = 0;
 		this.language = "";
@@ -51,9 +53,9 @@ public class Movie implements Serializable
 	 * @param description the description
 	 * @param place the place
 	 */
-	public Movie(int id, String name, int time, String language, String description, String place)
+	public Movie( String name, int time, String language, String description, String place)
 	{
-		this.id = id;
+		this.id = nextNumber++;
 		this.name = name;
 		this.time = time;
 		this.language = language;
