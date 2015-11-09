@@ -1,0 +1,2 @@
+serviceClass: de.unihd.movies.client.service.MovieManagerService
+path: A52C3DCFDDC10BA71B1D85861C8829B8.gwt.rpc

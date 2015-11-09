@@ -9,11 +9,11 @@ import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.*;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.SelectionChangeEvent;
@@ -21,11 +21,15 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.view.client.SingleSelectionModel;
 
+import de.unihd.movies.client.filter.FilteredListDataProvider;
+import de.unihd.movies.client.filter.MovieFilter;
 import de.unihd.movies.client.service.MovieManagerService;
 import de.unihd.movies.client.service.MovieManagerServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Button;
 
 // TODO: Auto-generated Javadoc
@@ -44,18 +48,20 @@ public class MovieUI extends Composite {
 	this.languages.add("spanish");
 	}
 	 private static final ProvidesKey<Movie> KEY_PROVIDER = new ProvidesKey<Movie>() {
-		    @Override
-		    public Object getKey(Movie row) {
-		      return row.getId();
-		    }
-		  };
-
+		@Override
+		public Object getKey(Movie row) {
+		   return row.getId();
+		}
+	 };
+	 
+		
 	/**
 	 * Creates a MovieUI with the given list of movies.
 	 * 
 	 * @param movies
 	 *            The list of movies to show.
 	 * */
+	
 	public MovieUI(ArrayList<Movie> movies) {
 
 		panel = new VerticalPanel();
@@ -74,19 +80,37 @@ public class MovieUI extends Composite {
 		});
 		movieTable.setSelectionModel(selectionModel);
 		
-		final ListDataProvider<Movie> provider = new ListDataProvider<Movie>();
+		/*final ListDataProvider<Movie> provider = new ListDataProvider<Movie>();
 		provider.addDataDisplay(movieTable);
 		List <Movie> temp = provider.getList();
 		for (Movie movie:movies){
 			temp.add(movie);
+		}*/
+		
+		MovieFilter filter = new MovieFilter();
+		final FilteredListDataProvider<Movie> filterProvider = new FilteredListDataProvider<Movie>(filter);
+		filterProvider.addDataDisplay(movieTable);
+		List <Movie> filtTemp = filterProvider.getList();
+		for (Movie movie:movies){
+			filtTemp.add(movie);
 		}
+		
+		final TextBox filterText= new TextBox();
+		filterText.addValueChangeHandler(new ValueChangeHandler<String>() {
+
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				filterProvider.setFilter(filterText.getValue());
+				movieTable.redraw();
+			}
+		});
 		
 		Button deleteButton = new Button("Delete");
 		deleteButton.addClickHandler(new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event){
 				Movie selected = selectionModel.getSelectedObject();
-				provider.getList().remove(selected);
+				filterProvider.getList().remove(selected);
 			}
 		});
 		
@@ -94,9 +118,11 @@ public class MovieUI extends Composite {
 		addButton.addClickHandler(new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event){
-				provider.getList().add(new Movie());
+				filterProvider.getList().add(new Movie());
 			}
 		});
+		
+
 		
 		Column<Movie, Number> idColumn = new Column<Movie, Number>(new NumberCell()){
 			public Integer getValue(Movie object){
@@ -145,6 +171,7 @@ public class MovieUI extends Composite {
 				} catch (NumberFormatException e){
 					Window.alert("Please enter a number");
 					timeCell.clearViewData(KEY_PROVIDER.getKey(object));
+					movieTable.redraw();
 					return;
 				}
 				int intValue =Integer.parseInt(value);
@@ -155,6 +182,7 @@ public class MovieUI extends Composite {
 					return;
 				}
 				Window.alert("You changed the Time of: "+ object.getName() + " to: " + value);
+				object.setTime(intValue);
 				movieTable.redraw();
 			}
 		});
@@ -205,7 +233,7 @@ public class MovieUI extends Composite {
 		
 
 		
-		ListHandler<Movie> columnSortHandler = new ListHandler<Movie>(temp);
+		ListHandler<Movie> columnSortHandler = new ListHandler<Movie>(filtTemp);
 		columnSortHandler.setComparator(nameColumn, new Comparator<Movie>(){
 			public int compare(Movie m1, Movie m2){
 				if(m1==m2){
@@ -293,9 +321,10 @@ public class MovieUI extends Composite {
 		// Add the table to the panel
 		panel.setSpacing(10);
 		panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_JUSTIFY);
+		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_DEFAULT);
 		buttonPanel.add(addButton);
 		buttonPanel.add(deleteButton);
+		buttonPanel.add(filterText);
 		panel.add(buttonPanel);
 		panel.getElement().setAttribute("align", "center");
 		panel.add(movieTable);

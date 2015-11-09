@@ -28,13 +28,28 @@ public class MovieManager implements EntryPoint {
 	public void remove(Movie pMovie){
 		this.movies.remove(pMovie);
 	}
-	private final MovieManagerServiceAsync movieManagerService = GWT.create(MovieManagerService.class);
+	private MovieManagerServiceAsync mMS = GWT.create(MovieManagerService.class);
 	
-		
+	private void loadMovies(){
+		if (mMS == null){
+			mMS = GWT.create(MovieManagerService.class);
+		} 
+		AsyncCallback<ArrayList<Movie>> callback = new AsyncCallback<ArrayList<Movie>>(){
 
+			@Override
+			public void onFailure(Throwable caught) {
+								
+			}
+
+			@Override
+			public void onSuccess(ArrayList<Movie> result) {
+				movies = result;				
+			}};
+			mMS.loadMovies(callback);
+	}
+	
 	public void onModuleLoad() {
-
-		//movieManagerService.loadMovies(callback);
+		this.loadMovies();
 		MovieUI movieUI = new MovieUI(this.movies);
 		movieUI.show();
 	}
